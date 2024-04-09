@@ -1,39 +1,59 @@
 using System;
+using System.Collections.Generic;
 
-// Абстрактний клас для продукту
-abstract class Product : ICloneable
+// Прототип гри
+abstract class GamePrototype
 {
-    public string Name { get; set; }
-    public double Price { get; set; }
-
-    public abstract void Info();
-
-    public object Clone()
-    {
-        // Використовуємо поверхневе копіювання (shallow copy)
-        return this.MemberwiseClone();
-    }
-}
-
-// Конкретна реалізація продукту "гра"
-class Game : Product
-{
+    public string Title { get; set; }
+    public string Genre { get; set; }
     public string Platform { get; set; }
+    public int AgeRating { get; set; }
 
-    public override void Info()
+    public abstract GamePrototype Clone();
+}
+
+// Конкретна реалізація прототипу гри
+class Game : GamePrototype
+{
+    public override GamePrototype Clone()
     {
-        Console.WriteLine($"Game: {Name}, Platform: {Platform}, Price: {Price}$");
+        return (GamePrototype)this.MemberwiseClone();
+    }
+
+    public void DisplayInfo()
+    {
+        Console.WriteLine($"Title: {Title}");
+        Console.WriteLine($"Genre: {Genre}");
+        Console.WriteLine($"Platform: {Platform}");
+        Console.WriteLine($"Age Rating: {AgeRating}");
+        Console.WriteLine();
     }
 }
 
-// Конкретна реалізація продукту "платформа"
-class Platform : Product
+// Клас для керування грою
+class GameManager
 {
-    public string Type { get; set; }
+    private Dictionary<string, GamePrototype> games = new Dictionary<string, GamePrototype>();
 
-    public override void Info()
+    public void AddGame(string key, GamePrototype game)
     {
-        Console.WriteLine($"Platform: {Name}, Type: {Type}, Price: {Price}$");
+        games.Add(key, game);
+    }
+
+    public GamePrototype GetGame(string key)
+    {
+        if (games.ContainsKey(key))
+            return games[key].Clone();
+        else
+            return null;
+    }
+
+    public void DisplayGameInfo(string key)
+    {
+        if (games.ContainsKey(key))
+            ((Game)games[key]).DisplayInfo();
+        else
+            Console.WriteLine("Game not found.");
     }
 }
 
@@ -41,30 +61,34 @@ class Program
 {
     static void Main(string[] args)
     {
-        // Створюємо оригінальний об'єкт "гра"
-        Game originalGame = new Game { Name = "Cyberpunk 2077", Platform = "PC", Price = 59.99 };
+        // Створюємо менеджер гри
+        GameManager manager = new GameManager();
 
-        // Клонуємо оригінальний об'єкт "гра"
-        Game clonedGame = (Game)originalGame.Clone();
-        clonedGame.Name = "Assassin's Creed Valhalla";
+        // Додаємо деякі ігри
+        manager.AddGame("game1", new Game { Title = "The Witcher 3", Genre = "RPG", Platform = "PC, PS4, Xbox One", AgeRating = 18 });
+        manager.AddGame("game2", new Game { Title = "Super Mario Odyssey", Genre = "Platformer", Platform = "Nintendo Switch", AgeRating = 7 });
+        manager.AddGame("game3", new Game { Title = "Grand Theft Auto V", Genre = "Action", Platform = "PC, PS4, Xbox One", AgeRating = 18 });
 
-        // Виводимо інформацію про оригінальний та клонований об'єкти "гра"
-        Console.WriteLine("Original Game:");
-        originalGame.Info();
-        Console.WriteLine("\nCloned Game:");
-        clonedGame.Info();
+        // Пошук ігри за назвою
+        string searchKey = "game1";
+        GamePrototype foundGame = manager.GetGame(searchKey);
+        if (foundGame != null)
+        {
+            Console.WriteLine($"Game found with key '{searchKey}':");
+            ((Game)foundGame).DisplayInfo();
+        }
+        else
+        {
+            Console.WriteLine($"Game with key '{searchKey}' not found.");
+        }
 
-        // Створюємо оригінальний об'єкт "платформа"
-        Platform originalPlatform = new Platform { Name = "PlayStation 5", Type = "Console", Price = 499.99 };
-
-        // Клонуємо оригінальний об'єкт "платформа"
-        Platform clonedPlatform = (Platform)originalPlatform.Clone();
-        clonedPlatform.Name = "Xbox Series X";
-
-        // Виводимо інформацію про оригінальний та клонований об'єкти "платформа"
-        Console.WriteLine("\nOriginal Platform:");
-        originalPlatform.Info();
-        Console.WriteLine("\nCloned Platform:");
-        clonedPlatform.Info();
+        // Фільтрація ігор за жанром
+        string genreFilter = "Action";
+        Console.WriteLine($"Games with genre '{genreFilter}':");
+        foreach (var game in manager.games.Values)
+        {
+            if (((Game)game).Genre == genreFilter)
+                ((Game)game).DisplayInfo();
+        }
     }
 }

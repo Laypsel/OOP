@@ -1,119 +1,110 @@
 using System;
+using System.Collections.Generic;
 
-// Абстрактний клас для продукту
-abstract class Product
+// Клас для представлення гри
+class Game
 {
-    public string Name { get; set; }
-    public double Price { get; set; }
-
-    public abstract void Info();
-}
-
-// Конкретна реалізація продукту "гра"
-class Game : Product
-{
+    public string Title { get; set; }
+    public string Genre { get; set; }
     public string Platform { get; set; }
+    public int AgeRating { get; set; }
 
-    public override void Info()
+    public void DisplayInfo()
     {
-        Console.WriteLine($"Game: {Name}, Platform: {Platform}, Price: {Price}$");
+        Console.WriteLine($"Title: {Title}");
+        Console.WriteLine($"Genre: {Genre}");
+        Console.WriteLine($"Platform: {Platform}");
+        Console.WriteLine($"Age Rating: {AgeRating}");
+        Console.WriteLine();
     }
 }
 
-// Конкретна реалізація продукту "платформа"
-class Platform : Product
+// Будівельник гри
+interface IGameBuilder
 {
-    public string Type { get; set; }
+    void BuildTitle();
+    void BuildGenre();
+    void BuildPlatform();
+    void BuildAgeRating();
+    Game GetGame();
+}
 
-    public override void Info()
+// Конкретний будівельник гри
+class ConcreteGameBuilder : IGameBuilder
+{
+    private Game game = new Game();
+
+    public void BuildTitle()
     {
-        Console.WriteLine($"Platform: {Name}, Type: {Type}, Price: {Price}$");
+        game.Title = "Default Title";
+    }
+
+    public void BuildGenre()
+    {
+        game.Genre = "Default Genre";
+    }
+
+    public void BuildPlatform()
+    {
+        game.Platform = "Default Platform";
+    }
+
+    public void BuildAgeRating()
+    {
+        game.AgeRating = 0;
+    }
+
+    public Game GetGame()
+    {
+        return game;
     }
 }
 
-// Абстрактний клас будівельника
-abstract class Builder
+// Директор для будівельника гри
+class GameDirector
 {
-    public abstract void SetName(string name);
-    public abstract void SetPrice(double price);
-    public abstract void BuildProduct();
-    public abstract Product GetResult();
-}
+    private IGameBuilder builder;
 
-// Конкретний будівельник для продукту "гра"
-class GameBuilder : Builder
-{
-    private Game _game = new Game();
-
-    public override void SetName(string name)
+    public GameDirector(IGameBuilder builder)
     {
-        _game.Name = name;
+        this.builder = builder;
     }
 
-    public override void SetPrice(double price)
+    public void ConstructGame()
     {
-        _game.Price = price;
-    }
-
-    public override void BuildProduct()
-    {
-        // Додаткові дії для побудови продукту "гра", наприклад, вибір платформи
-        _game.Platform = "PC";
-    }
-
-    public override Product GetResult()
-    {
-        return _game;
+        builder.BuildTitle();
+        builder.BuildGenre();
+        builder.BuildPlatform();
+        builder.BuildAgeRating();
     }
 }
 
-// Конкретний будівельник для продукту "платформа"
-class PlatformBuilder : Builder
+// Клас для керування грою
+class GameManager
 {
-    private Platform _platform = new Platform();
+    private List<Game> games = new List<Game>();
 
-    public override void SetName(string name)
+    public void AddGame(Game game)
     {
-        _platform.Name = name;
+        games.Add(game);
     }
 
-    public override void SetPrice(double price)
+    public void DisplayGameInfo(string title)
     {
-        _platform.Price = price;
+        Game foundGame = games.Find(g => g.Title == title);
+        if (foundGame != null)
+        {
+            foundGame.DisplayInfo();
+        }
+        else
+        {
+            Console.WriteLine("Game not found.");
+        }
     }
 
-    public override void BuildProduct()
+    public List<Game> FilterGamesByGenre(string genre)
     {
-        // Додаткові дії для побудови продукту "платформа", наприклад, вибір типу
-        _platform.Type = "Console";
-    }
-
-    public override Product GetResult()
-    {
-        return _platform;
-    }
-}
-
-// Директор, який використовує будівельника
-class Director
-{
-    private Builder _builder;
-
-    public Director(Builder builder)
-    {
-        _builder = builder;
-    }
-
-    public void Construct(string name, double price)
-    {
-        _builder.SetName(name);
-        _builder.SetPrice(price);
-        _builder.BuildProduct();
-    }
-
-    public Product GetResult()
-    {
-        return _builder.GetResult();
+        return games.FindAll(g => g.Genre == genre);
     }
 }
 
@@ -121,24 +112,30 @@ class Program
 {
     static void Main(string[] args)
     {
-        // Створюємо директора
-        Director director = new Director(new GameBuilder());
+        // Створення будівельника гри
+        IGameBuilder builder = new ConcreteGameBuilder();
+        // Створення директора
+        GameDirector director = new GameDirector(builder);
+        // Побудова гри
+        director.ConstructGame();
+        // Отримання гри
+        Game game = builder.GetGame();
 
-        // Конструюємо продукт "гра"
-        director.Construct("Cyberpunk 2077", 59.99);
-        Product game = director.GetResult();
+        // Створення менеджера гри
+        GameManager manager = new GameManager();
+        // Додавання гри до менеджера
+        manager.AddGame(game);
 
-        // Виводимо інформацію про продукт "гра"
-        game.Info();
+        // Перегляд інформації про гру
+        manager.DisplayGameInfo(game.Title);
 
-        // Змінюємо будівельника для побудови продукту "платформа"
-        director = new Director(new PlatformBuilder());
-
-        // Конструюємо продукт "платформа"
-        director.Construct("PlayStation 5", 499.99);
-        Product platform = director.GetResult();
-
-        // Виводимо інформацію про продукт "платформа"
-        platform.Info();
+        // Фільтрація ігор за жанром
+        string genreFilter = "Default Genre";
+        List<Game> filteredGames = manager.FilterGamesByGenre(genreFilter);
+        Console.WriteLine($"Games with genre '{genreFilter}':");
+        foreach (var g in filteredGames)
+        {
+            g.DisplayInfo();
+        }
     }
 }
