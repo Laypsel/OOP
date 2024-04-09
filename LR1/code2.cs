@@ -1,135 +1,73 @@
 using System;
 
-// Абстрактний клас ігри
-abstract class Game
-{
-    public abstract void Play();
+// Класи для моделювання користувачів
+public abstract class User {
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string Phone { get; set; }
+
+    public abstract void DisplayUserInfo();
 }
 
-// Конкретні реалізації ігор
-class PCGame : Game
-{
-    public override void Play()
-    {
-        Console.WriteLine("Playing PC game");
+public class Guest : User {
+    public override void DisplayUserInfo() {
+        Console.WriteLine("Guest: " + Name);
     }
 }
 
-class XboxGame : Game
-{
-    public override void Play()
-    {
-        Console.WriteLine("Playing Xbox game");
+public class RegisteredUser : User {
+    public override void DisplayUserInfo() {
+        Console.WriteLine("Registered User: " + Name);
     }
 }
 
-class PlayStationGame : Game
-{
-    public override void Play()
-    {
-        Console.WriteLine("Playing PlayStation game");
+public class Administrator : User {
+    public override void DisplayUserInfo() {
+        Console.WriteLine("Administrator: " + Name);
     }
 }
 
-// Абстрактний клас платформи
-abstract class Platform
-{
-    public abstract void Run();
+// Абстрактна фабрика для створення користувачів
+public interface IUserFactory {
+    User CreateUser();
 }
 
-// Конкретні реалізації платформ
-class PCPlatform : Platform
-{
-    public override void Run()
-    {
-        Console.WriteLine("Running on PC");
+// Конкретні фабрики для створення користувачів різних типів
+public class GuestFactory : IUserFactory {
+    public User CreateUser() {
+        return new Guest();
     }
 }
 
-class XboxPlatform : Platform
-{
-    public override void Run()
-    {
-        Console.WriteLine("Running on Xbox");
+public class RegisteredUserFactory : IUserFactory {
+    public User CreateUser() {
+        return new RegisteredUser();
     }
 }
 
-class PlayStationPlatform : Platform
-{
-    public override void Run()
-    {
-        Console.WriteLine("Running on PlayStation");
+public class AdminFactory : IUserFactory {
+    public User CreateUser() {
+        return new Administrator();
     }
 }
 
-// Абстрактна фабрика для створення сімейств ігор та платформ
-abstract class GameFactory
-{
-    public abstract Game CreateGame();
-    public abstract Platform CreatePlatform();
-}
+// Main class
+class Program {
+    static void Main(string[] args) {
+        // Використання абстрактної фабрики для створення об'єктів користувачів
+        IUserFactory guestFactory = new GuestFactory();
+        User guest = guestFactory.CreateUser();
+        guest.Name = "Guest Name";
+        guest.DisplayUserInfo();
 
-// Конкретні фабрики
-class PCGameFactory : GameFactory
-{
-    public override Game CreateGame()
-    {
-        return new PCGame();
-    }
+        IUserFactory registeredUserFactory = new RegisteredUserFactory();
+        User registeredUser = registeredUserFactory.CreateUser();
+        registeredUser.Name = "Registered User Name";
+        registeredUser.DisplayUserInfo();
 
-    public override Platform CreatePlatform()
-    {
-        return new PCPlatform();
-    }
-}
-
-class XboxGameFactory : GameFactory
-{
-    public override Game CreateGame()
-    {
-        return new XboxGame();
-    }
-
-    public override Platform CreatePlatform()
-    {
-        return new XboxPlatform();
-    }
-}
-
-class PlayStationGameFactory : GameFactory
-{
-    public override Game CreateGame()
-    {
-        return new PlayStationGame();
-    }
-
-    public override Platform CreatePlatform()
-    {
-        return new PlayStationPlatform();
-    }
-}
-
-class Program
-{
-    static void Main(string[] args)
-    {
-        // Використання абстрактної фабрики
-        GameFactory pcFactory = new PCGameFactory();
-        Game pcGame = pcFactory.CreateGame();
-        Platform pcPlatform = pcFactory.CreatePlatform();
-        pcGame.Play();
-        pcPlatform.Run();
-
-        GameFactory xboxFactory = new XboxGameFactory();
-        Game xboxGame = xboxFactory.CreateGame();
-        Platform xboxPlatform = xboxFactory.CreatePlatform();
-        xboxGame.Play();
-        xboxPlatform.Run();
-
-        GameFactory playStationFactory = new PlayStationGameFactory();
-        Game playStationGame = playStationFactory.CreateGame();
-        Platform playStationPlatform = playStationFactory.CreatePlatform();
-        playStationGame.Play();
-        playStationPlatform.Run();
+        IUserFactory adminFactory = new AdminFactory();
+        User admin = adminFactory.CreateUser();
+        admin.Name = "Admin Name";
+        admin.DisplayUserInfo();
     }
 }

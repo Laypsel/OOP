@@ -1,100 +1,72 @@
 using System;
 
-// Базовий клас ігри
-public abstract class Game
-{
-    public abstract void Play();
+// Класи для моделювання користувачів
+public abstract class User {
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string Phone { get; set; }
+
+    public abstract void DisplayUserInfo();
 }
 
-// Конкретна реалізація гри на платформі PC
-public class PCGame : Game
-{
-    public override void Play()
-    {
-        Console.WriteLine("Playing the game on PC.");
+public class Guest : User {
+    public override void DisplayUserInfo() {
+        Console.WriteLine("Guest: " + Name);
     }
 }
 
-// Конкретна реалізація гри на платформі Xbox
-public class XboxGame : Game
-{
-    public override void Play()
-    {
-        Console.WriteLine("Playing the game on Xbox.");
+public class RegisteredUser : User {
+    public override void DisplayUserInfo() {
+        Console.WriteLine("Registered User: " + Name);
     }
 }
 
-// Конкретна реалізація гри на платформі PlayStation
-public class PlayStationGame : Game
-{
-    public override void Play()
-    {
-        Console.WriteLine("Playing the game on PlayStation.");
+public class Administrator : User {
+    public override void DisplayUserInfo() {
+        Console.WriteLine("Administrator: " + Name);
     }
 }
 
-// Фабричний метод для створення обєктів типу "гра"
-public abstract class GameFactory
-{
-    public abstract Game CreateGame();
+// Фабричний метод для створення користувачів
+public abstract class UserFactory {
+    public abstract User CreateUser();
 }
 
-// Фабрика для створення ігор для PC
-public class PCGameFactory : GameFactory
-{
-    public override Game CreateGame()
-    {
-        return new PCGame();
+public class GuestFactory : UserFactory {
+    public override User CreateUser() {
+        return new Guest();
     }
 }
 
-// Фабрика для створення ігор для Xbox
-public class XboxGameFactory : GameFactory
-{
-    public override Game CreateGame()
-    {
-        return new XboxGame();
+public class RegisteredUserFactory : UserFactory {
+    public override User CreateUser() {
+        return new RegisteredUser();
     }
 }
 
-// Фабрика для створення ігор для PlayStation
-
-public class PlayStationGameFactory : GameFactory
-{
-    public override Game CreateGame()
-    {
-        return new PlayStationGame();
+public class AdminFactory : UserFactory {
+    public override User CreateUser() {
+        return new Administrator();
     }
 }
 
-class Program
-{
-    static void Main(string[] args)
-    {
-        // Вибираємо платформу для гри
-        string platform = "PC"; // Можна змінити на "Xbox" або "PlayStation"
+// Main class
+class Program {
+    static void Main(string[] args) {
+        // Використання фабричного методу для створення об'єктів користувачів
+        UserFactory guestFactory = new GuestFactory();
+        User guest = guestFactory.CreateUser();
+        guest.Name = "Guest Name";
+        guest.DisplayUserInfo();
 
-        // Створюємо відповідну фабрику ігор
-        GameFactory gameFactory = null;
-        switch (platform)
-        {
-            case "PC":
-                gameFactory = new PCGameFactory();
-                break;
-            case "Xbox":
-                gameFactory = new XboxGameFactory();
-                break;
-            case "PlayStation":
-                gameFactory = new PlayStationGameFactory();
-                break;
-            default:
-                throw new ArgumentException("Invalid platform");
-        }
+        UserFactory registeredUserFactory = new RegisteredUserFactory();
+        User registeredUser = registeredUserFactory.CreateUser();
+        registeredUser.Name = "Registered User Name";
+        registeredUser.DisplayUserInfo();
 
-        // Створюємо гру відповідно до вибраної платформи
-        Game game = gameFactory.CreateGame();
-
-        // Граємо в гру
-        game.Play();
+        UserFactory adminFactory = new AdminFactory();
+        User admin = adminFactory.CreateUser();
+        admin.Name = "Admin Name";
+        admin.DisplayUserInfo();
     }
 }
